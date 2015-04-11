@@ -32,7 +32,7 @@ var APIKey string = os.Getenv("JUMPCLOUD_APIKEY")
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "ClearCare Jumpclud"
+	app.Name = "ClearCare Jumpcloud"
 	app.Usage = "Work w/ the Clouds of Jump"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
