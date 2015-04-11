@@ -120,7 +120,43 @@ func AddTagToSystem(c *cli.Context) {
 }
 
 func RemoveTagFromSystem(c *cli.Context) {
-	fmt.Println("my args: " + c.Args().First())
+	tagNameToRemove := c.Args().First()
+	goutils.NotEmpty(tagNameToRemove)
+
+	conf := buildConfig(c)
+
+	if conf.verbose {
+		fmt.Printf("Removeing tag:%s\n", tagNameToRemove)
+	}
+
+	system, err := conf.jc.GetSystemById(conf.systemID, true)
+	goutils.Check(err)
+
+	currentTags := system.Tags
+	fmt.Println(len(currentTags))
+
+	newTagNames := make([]string, len(currentTags)-1)
+	i := 0
+	for _, tag := range currentTags {
+		if tag.Name != tagNameToRemove {
+			fmt.Println(tag.Name)
+			newTagNames[i] = tag.Name
+			i++
+		}
+	}
+	if conf.verbose {
+		fmt.Printf("Proposed Tag List %v\n", newTagNames)
+	}
+
+	system.TagList = newTagNames
+	updatedSystemID, err := conf.jc.UpdateSystem(system)
+	goutils.Check(err)
+
+	system, err = conf.jc.GetSystemById(updatedSystemID, true)
+	if conf.verbose {
+		fmt.Printf("Tags After Remove: %v\n", system.Tags)
+	}
+
 }
 
 func DeleteSystem(c *cli.Context) {
