@@ -23,3 +23,12 @@ GLOBAL OPTIONS:
    --version, -v                        print the version  
 
 
+
+Its assumed that this will be run from the system, if not you will need the config file of the system that you are wanting to edit  
+
+Add a tag:  
+jumpcloud system addTag  
+
+Remove a tag:  
+jumpcloud system removeTag
+
