@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/clearcare/jcapi"
+	"github.com/thejumpcloud/jcapi"
 	"github.com/codegangsta/cli"
 	"github.com/grahamgreen/goutils"
 )
@@ -21,11 +21,6 @@ type config struct {
 	systemID string
 	jc       jcapi.JCAPI
 }
-
-//TODO add flag for apikey but get default from env
-//prompt before delete unless the force flag is set
-
-//var APIKey string = os.Getenv("JUMPCLOUD_APIKEY")
 
 func main() {
 	app := cli.NewApp()
@@ -76,6 +71,12 @@ func main() {
 				{
 					Name:   "delete",
 					Usage:  "Delete system from JumpCLoud",
+                                        Flags: []cli.Flag{
+                                            cli.BoolFlag{
+                                                Name: "y",
+                                                Usage: "Delete without prompting"
+                                            },
+                                        },
 					Action: DeleteSystem,
 				},
 			},
@@ -128,7 +129,7 @@ func RemoveTagFromSystem(c *cli.Context) {
 	conf := buildConfig(c)
 
 	if conf.verbose {
-		fmt.Printf("Removeing tag:%s\n", tagNameToRemove)
+		fmt.Printf("Removing tag:%s\n", tagNameToRemove)
 	}
 
 	system, err := conf.jc.GetSystemById(conf.systemID, true)
@@ -162,7 +163,11 @@ func RemoveTagFromSystem(c *cli.Context) {
 }
 
 func DeleteSystem(c *cli.Context) {
-	fmt.Println("my args: " + c.Args().First())
+	conf := buildConfig(c)
+
+	system, err := conf.jc.GetSystemById(conf.systemID, true)
+	goutils.Check(err)
+
 }
 
 func CreateTag(c *cli.Context) {
