@@ -22,13 +22,10 @@ type config struct {
 	jc       jcapi.JCAPI
 }
 
-//func (c config) API() jcapi.JCAPI {
-//	jc := jcapi.NewJCAPI(APIKey, UrlBase)
-//	return jc
-//
-//}
+//TODO add flag for apikey but get default from env
+//prompt before delete unless the force flag is set
 
-var APIKey string = os.Getenv("JUMPCLOUD_APIKEY")
+//var APIKey string = os.Getenv("JUMPCLOUD_APIKEY")
 
 func main() {
 	app := cli.NewApp()
@@ -43,6 +40,11 @@ func main() {
 		cli.BoolFlag{
 			Name:  "verbose, V",
 			Usage: "Be verbose",
+		},
+		cli.StringFlag{
+			Name:   "apikey, k",
+			Usage:  "Your jumpcloud api key",
+			EnvVar: "JUMPCLOUD_APIKEY",
 		},
 	}
 	app.Commands = []cli.Command{
@@ -171,6 +173,7 @@ func buildConfig(c *cli.Context) config {
 	cfg := config{}
 	cfg.verbose = c.GlobalBool("verbose")
 	config_file := c.GlobalString("config")
+	APIKey := c.GlobalString("apikey")
 	var dat map[string]interface{}
 	conf, err := ioutil.ReadFile(config_file)
 	goutils.Check(err)
@@ -182,51 +185,3 @@ func buildConfig(c *cli.Context) config {
 
 	return cfg
 }
-
-//TODO//
-//each command needs to
-// get the verbose tag
-// get the config file
-//   get the system systemid from the config file
-// instantiate a jcapi
-// how can i do ^^ in one func?
-
-//func addServer {
-//	var agentConfig string
-//	flag.StringVar(&agentConfig, "agentConfig", "/opt/jc/jcagent.conf", "jc agent config file")
-//
-//
-//	flag.Parse()
-//
-//	conf, err := ioutil.ReadFile(agentConfig)
-//	goutils.Check(err)
-//
-//	var dat map[string]interface{}
-//
-//	if err := json.Unmarshal(conf, &dat); err != nil {
-//		panic(err)
-//	}
-//	systemKey := dat["systemKey"].(string)
-//	//get agent config from command line or default location
-//	//get id from confi
-//	//get system by id
-//	//add tag
-//
-//	//cmd options
-//	//  system add-tags
-//	//  user add
-//	//  user add-tags
-//
-//	jc := jcapi.NewJCAPI(APIKey, UrlBase)
-//	system, err := jc.GetSystemById(systemKey, true)
-//	goutils.Check(err)
-//	tagNameToAdd := []string{"prod"}
-//	system.TagList = tagNameToAdd
-//	updatedSystemID, err := jc.UpdateSystem(system)
-//	goutils.Check(err)
-//
-//	system, err = jc.GetSystemById(updatedSystemID, true)
-//	goutils.Check(err)
-//	fmt.Println(system)
-//
-//}

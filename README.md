@@ -24,11 +24,14 @@ GLOBAL OPTIONS:
 
 
 
-Its assumed that this will be run from the system, if not you will need the config file of the system that you are wanting to edit  
+Its assumed that this will be run from the system, if not you will need the config file of the system that you are wanting to edit. Also, at this time you will need to set 
+the jumpcloud api key in the env. 
+
+export JUMPCLOUD_APIKEY=thekey
 
 Add a tag:  
-jumpcloud system addTag  
+jumpcloud system addTag "tagname" 
 
 Remove a tag:  
-jumpcloud system removeTag
+jumpcloud system removeTag "tagname"
 
