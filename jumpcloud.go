@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 
 	"github.com/clearcare/jcapi"
@@ -168,7 +169,22 @@ func RemoveTagFromSystem(c *cli.Context) {
 
 func DeleteSystem(c *cli.Context) {
 	conf := buildConfig(c)
-	//if
+	if !(conf.force) {
+		fmt.Println("You sure you want to do this?(Type \"Yes\" to delete):")
+		askForConfirmation()
+	}
+	system, err := conf.jc.GetSystemById(conf.systemID, false)
+	goutils.Check(err)
+
+	if conf.verbose {
+		fmt.Println("Deleting: " + system.ToString())
+	}
+	err := conf.jc.DeleteSystem(system)
+	goutils.Check(err)
+
+	if conf.verbose {
+		fmt.Println("Deleted: " + conf.systemID)
+	}
 
 }
 
@@ -192,4 +208,19 @@ func buildConfig(c *cli.Context) config {
 	cfg.jc = jcapi.NewJCAPI(APIKey, UrlBase)
 
 	return cfg
+}
+
+func askForConfirmation() bool {
+	var response string
+	_, err := fmt.Scanln(&response)
+	if err != nil {
+		log.Fatal(err)
+	}
+	okayResponse := "Yes"
+	if response == okayResponse {
+		return true
+	} else {
+		fmt.Println("You must type \"Yes\" in order to proceed:")
+		return askForConfirmation()
+	}
 }
