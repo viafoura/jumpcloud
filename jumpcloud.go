@@ -31,6 +31,7 @@ type config struct {
 
 func main() {
 	app := cli.NewApp()
+	app.Version("0.1.0")
 	app.Name = "ClearCare Jumpcloud"
 	app.Usage = "Work w/ the Clouds of Jump"
 	app.Flags = []cli.Flag{
