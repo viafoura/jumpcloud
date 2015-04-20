@@ -18,6 +18,7 @@ const (
 
 type config struct {
 	verbose  bool
+	force    bool
 	systemID string
 	jc       jcapi.JCAPI
 }
@@ -45,6 +46,10 @@ func main() {
 			Name:   "apikey, k",
 			Usage:  "Your jumpcloud api key",
 			EnvVar: "JUMPCLOUD_APIKEY",
+		},
+		cli.BoolFlag{
+			Name:  "force, f",
+			Usage: "Don't ask before deleting",
 		},
 	}
 	app.Commands = []cli.Command{
@@ -162,7 +167,9 @@ func RemoveTagFromSystem(c *cli.Context) {
 }
 
 func DeleteSystem(c *cli.Context) {
-	fmt.Println("my args: " + c.Args().First())
+	conf := buildConfig(c)
+	//if
+
 }
 
 func CreateTag(c *cli.Context) {
@@ -172,6 +179,7 @@ func CreateTag(c *cli.Context) {
 func buildConfig(c *cli.Context) config {
 	cfg := config{}
 	cfg.verbose = c.GlobalBool("verbose")
+	cfg.force = c.GlobalBool("force")
 	config_file := c.GlobalString("config")
 	APIKey := c.GlobalString("apikey")
 	var dat map[string]interface{}
