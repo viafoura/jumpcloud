@@ -134,20 +134,18 @@ func RemoveTagFromSystem(c *cli.Context) {
 	conf := buildConfig(c)
 
 	if conf.verbose {
-		fmt.Printf("Removeing tag:%s\n", tagNameToRemove)
+		fmt.Printf("Removing tag:%s\n", tagNameToRemove)
 	}
 
 	system, err := conf.jc.GetSystemById(conf.systemID, true)
 	goutils.Check(err)
 
 	currentTags := system.Tags
-	fmt.Println(len(currentTags))
 
 	newTagNames := make([]string, len(currentTags)-1)
 	i := 0
 	for _, tag := range currentTags {
 		if tag.Name != tagNameToRemove {
-			fmt.Println(tag.Name)
 			newTagNames[i] = tag.Name
 			i++
 		}
@@ -179,7 +177,7 @@ func DeleteSystem(c *cli.Context) {
 	if conf.verbose {
 		fmt.Println("Deleting: " + system.ToString())
 	}
-	err := conf.jc.DeleteSystem(system)
+	err = conf.jc.DeleteSystem(system)
 	goutils.Check(err)
 
 	if conf.verbose {
