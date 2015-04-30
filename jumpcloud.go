@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/codegangsta/cli"
 	"github.com/grahamgreen/goutils"
@@ -76,14 +77,13 @@ func main() {
 					Action: RemoveTagFromSystem,
 				},
 				{
-					Name:  "delete",
-					Usage: "Delete system from JumpCLoud",
-					Flags: []cli.Flag{
-						cli.BoolFlag{
-							Name:  "y",
-							Usage: "Delete without prompting",
-						},
-					},
+					Name:   "updateConfig",
+					Usage:  "Change System Property (property <new value>)",
+					Action: UpdateSystemConfig,
+				},
+				{
+					Name:   "delete",
+					Usage:  "Delete system from JumpCLoud",
 					Action: DeleteSystem,
 				},
 			},
@@ -163,6 +163,52 @@ func RemoveTagFromSystem(c *cli.Context) {
 	system, err = conf.jc.GetSystemById(updatedSystemID, true)
 	if conf.verbose {
 		fmt.Printf("Tags After Remove: %v\n", system.Tags)
+	}
+
+}
+
+func UpdateSystemConfig(c *cli.Context) {
+	configToChange := c.Args().First()
+	goutils.NotEmpty(configToChange)
+	newConfigValue := c.Args().Get(1)
+	goutils.NotEmpty(newConfigValue)
+
+	conf := buildConfig(c)
+
+	if conf.verbose {
+		fmt.Printf("Updating %s to %s\n", configToChange, newConfigValue)
+	}
+
+	system, err := conf.jc.GetSystemById(conf.systemID, false)
+	switch {
+	case configToChange == "displayName":
+		system.DisplayName = newConfigValue
+	case configToChange == "allowSshRootLogin":
+		configBool, err := strconv.ParseBool(newConfigValue)
+		goutils.Check(err)
+		system.AllowSshRootLogin = configBool
+	case configToChange == "allowSshPasswordAuthentication":
+		configBool, err := strconv.ParseBool(newConfigValue)
+		goutils.Check(err)
+		system.AllowSshPasswordAuthentication = configBool
+	case configToChange == "allowMultifactorAuthentication":
+		configBool, err := strconv.ParseBool(newConfigValue)
+		goutils.Check(err)
+		system.AllowMultiFactorAuthentication = configBool
+	case configToChange == "allowPublicKeyAuthentication":
+		configBool, err := strconv.ParseBool(newConfigValue)
+		goutils.Check(err)
+		system.AllowPublicKeyAuth = configBool
+	default:
+		log.Fatal("Not a valid config parameter")
+
+	}
+	updatedSystemID, err := conf.jc.UpdateSystem(system)
+	goutils.Check(err)
+
+	system, err = conf.jc.GetSystemById(updatedSystemID, false)
+	if conf.verbose {
+		fmt.Printf("%s not updated to %s\n", configToChange, newConfigValue)
 	}
 
 }
