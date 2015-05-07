@@ -77,8 +77,13 @@ func main() {
 					Action: RemoveTagFromSystem,
 				},
 				{
-					Name:   "updateConfig",
-					Usage:  "Change System Property (property <new value>)",
+					Name: "updateConfig",
+					Usage: `Change System Properties. Valid properties are
+	    displayName - string
+	    allowSshRootLogin - bool
+	    allowSshPasswordAuthentication - bool - required for MFA
+	    allowMultiFactorAuthentication - bool
+	    allowPublicKeyAuthentication - bool`,
 					Action: UpdateSystemConfig,
 				},
 				{
@@ -221,14 +226,9 @@ func UpdateSystemConfig(c *cli.Context) {
 	updatedSystemID, err := conf.jc.UpdateSystem(system)
 	goutils.Check(err)
 
-	fmt.Println(" ")
-	fmt.Println(updatedSystemID)
-	newSystem, err2 := conf.jc.GetSystemById(updatedSystemID, false)
-	goutils.Check(err2)
+	system, err = conf.jc.GetSystemById(updatedSystemID, false)
+	goutils.Check(err)
 
-	fmt.Println(newSystem.Id)
-	fmt.Println(newSystem.AllowSshRootLogin)
-	fmt.Println(newSystem.ToString())
 	//out, _ := json.MarshalIndent(system, "", " ")
 	//goutils.Check(err2)
 	//os.Stdout.Write(out)
