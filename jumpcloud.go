@@ -8,9 +8,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/clearcare/jcapi"
 	"github.com/codegangsta/cli"
 	"github.com/grahamgreen/goutils"
+	"github.com/thejumpcloud/jcapi"
 )
 
 const (
