@@ -77,8 +77,13 @@ func main() {
 					Action: RemoveTagFromSystem,
 				},
 				{
-					Name:   "updateConfig",
-					Usage:  "Change System Property (property <new value>)",
+					Name: "updateConfig",
+					Usage: `Change System Properties. Valid properties are
+	    displayName - string
+	    allowSshRootLogin - bool
+	    allowSshPasswordAuthentication - bool - required for MFA
+	    allowMultiFactorAuthentication - bool
+	    allowPublicKeyAuthentication - bool`,
 					Action: UpdateSystemConfig,
 				},
 				{
@@ -86,12 +91,25 @@ func main() {
 					Usage:  "Delete system from JumpCLoud",
 					Action: DeleteSystem,
 				},
+				{
+					Name:   "getInfo",
+					Usage:  "Geat all the systme settings",
+					Action: GetSystem,
+				},
 			},
 		},
 	}
 
 	app.Run(os.Args)
 
+}
+
+func GetSystem(c *cli.Context) {
+	conf := buildConfig(c)
+	system, err := conf.jc.GetSystemById(conf.systemID, true)
+	goutils.Check(err)
+	out, _ := json.MarshalIndent(system, "", " ")
+	os.Stdout.Write(out)
 }
 
 func AddTagToSystem(c *cli.Context) {
@@ -111,11 +129,13 @@ func AddTagToSystem(c *cli.Context) {
 
 	systemTags := system.Tags
 
-	systemTagNames := make([]string, len(systemTags)+1)
-	for i, tag := range systemTags {
-		systemTagNames[i] = tag.Name
+	systemTagNames := make([]string, 0)
+	for _, tag := range systemTags {
+		if tag.Name != tagNameToAdd {
+			systemTagNames = append(systemTagNames, tag.Name)
+		}
 	}
-	systemTagNames[len(systemTagNames)-1] = tagNameToAdd
+	systemTagNames = append(systemTagNames, tagNameToAdd)
 	if conf.verbose {
 		fmt.Printf("Proposed Tag List %v\n", systemTagNames)
 	}
@@ -144,12 +164,10 @@ func RemoveTagFromSystem(c *cli.Context) {
 
 	currentTags := system.Tags
 
-	newTagNames := make([]string, len(currentTags)-1)
-	i := 0
+	newTagNames := make([]string, 0)
 	for _, tag := range currentTags {
 		if tag.Name != tagNameToRemove {
-			newTagNames[i] = tag.Name
-			i++
+			newTagNames = append(newTagNames, tag.Name)
 		}
 	}
 	if conf.verbose {
@@ -180,6 +198,7 @@ func UpdateSystemConfig(c *cli.Context) {
 	}
 
 	system, err := conf.jc.GetSystemById(conf.systemID, false)
+	fmt.Println(system.ToString())
 	switch {
 	case configToChange == "displayName":
 		system.DisplayName = newConfigValue
@@ -191,7 +210,7 @@ func UpdateSystemConfig(c *cli.Context) {
 		configBool, err := strconv.ParseBool(newConfigValue)
 		goutils.Check(err)
 		system.AllowSshPasswordAuthentication = configBool
-	case configToChange == "allowMultifactorAuthentication":
+	case configToChange == "allowMultiFactorAuthentication":
 		configBool, err := strconv.ParseBool(newConfigValue)
 		goutils.Check(err)
 		system.AllowMultiFactorAuthentication = configBool
@@ -203,12 +222,19 @@ func UpdateSystemConfig(c *cli.Context) {
 		log.Fatal("Not a valid config parameter")
 
 	}
+
 	updatedSystemID, err := conf.jc.UpdateSystem(system)
 	goutils.Check(err)
 
 	system, err = conf.jc.GetSystemById(updatedSystemID, false)
+	goutils.Check(err)
+
+	//out, _ := json.MarshalIndent(system, "", " ")
+	//goutils.Check(err2)
+	//os.Stdout.Write(out)
+
 	if conf.verbose {
-		fmt.Printf("%s not updated to %s\n", configToChange, newConfigValue)
+		fmt.Printf("%s now updated to %s\n", configToChange, newConfigValue)
 	}
 
 }
