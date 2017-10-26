@@ -8,9 +8,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/codegangsta/cli"
 	"github.com/grahamgreen/goutils"
 	"github.com/thejumpcloud/jcapi"
+	"github.com/urfave/cli"
 )
 
 const (
@@ -27,9 +27,9 @@ type config struct {
 
 func main() {
 	app := cli.NewApp()
-	app.Version = "0.1.0"
-	app.Name = "ClearCare Jumpcloud"
-	app.Usage = "Work w/ the Clouds of Jump"
+	app.Version = "0.1.1"
+	app.Name = "ClearCare JumpCloud"
+	app.Usage = "jumpcloud"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:  "config, c",
@@ -260,7 +260,24 @@ func DeleteSystem(c *cli.Context) {
 }
 
 func CreateTag(c *cli.Context) {
-	fmt.Println("my args: " + c.Args().First())
+	tagNameToAdd := c.Args().First()
+	goutils.NotEmpty(tagNameToAdd)
+	conf := buildConfig(c)
+
+	if conf.verbose {
+		fmt.Printf("Creating tag: %s\n", tagNameToAdd)
+	}
+	tag := jcapi.JCTag{
+		Name:        tagNameToAdd,
+		Systems:     make([]string, 0),
+		SystemUsers: make([]string, 0),
+	}
+	tagId, err := conf.jc.AddUpdateTag(jcapi.Insert, tag)
+	goutils.Check(err)
+
+	if conf.verbose {
+		fmt.Printf("New tag id: %s\n", tagId)
+	}
 }
 
 func buildConfig(c *cli.Context) config {
